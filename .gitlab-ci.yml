@@ -1,0 +1,25 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+stages:
+  - base
+
+static_check:
+  stage: base
+  image: docker.io/library/fedora:42
+  script:
+    - test ! -d .idea
+    - ( ! grep -q 'TODO' sort.c )
+
+compile:
+  stage: base
+  image: docker.io/library/fedora:42
+  script:
+    - dnf install -y gcc
+    - gcc -Wall -Wextra -o main main.c sort.c &> compile.log
+    - test ! -s compile.log
+  artifacts:
+    paths:
+      - main
